@@ -9,6 +9,7 @@ target_include_directories(app
 
 target_link_libraries(app
   mcu
+  stm32f3xx_hal_driver
 )
 
 target_link_options(app PRIVATE -Wl,-Map=${PROJECT_NAME}.map)

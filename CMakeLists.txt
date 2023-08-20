@@ -12,6 +12,7 @@ include_directories(${CMSIS_DIR})
 
 add_subdirectory(app)
 add_subdirectory(mcu)
+add_subdirectory(stm32f3xx_hal_driver)
 
 add_custom_target(erase-flash
 	COMMAND st-flash erase

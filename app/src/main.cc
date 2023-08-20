@@ -1,4 +1,5 @@
-#include <stm32f3xx.h>
+#include <stm32f3xx_hal.h>
+#include "stm32f3xx_hal_gpio.h"
 
 void softDelay(volatile uint32_t time)
 {
@@ -9,19 +10,19 @@ void softDelay(volatile uint32_t time)
 
 int main()
 {
-    constexpr unsigned int led = 8;
+    constexpr uint16_t led = GPIO_PIN_12;
 
-    RCC->AHBENR |= RCC_AHBENR_GPIOEEN;  // Turn tacting GPIOE on
+    __HAL_RCC_GPIOE_CLK_ENABLE();
 
-    GPIOE->MODER |= 1 << led * 2;
-    GPIOE->OTYPER &= ~(1 << led);
-    GPIOE->OSPEEDR |= 3 << led * 2;
-    GPIOE->PUPDR |= 1 << led * 2;
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+    GPIO_InitStruct.Pin              = led;
+    GPIO_InitStruct.Mode             = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Pull             = GPIO_PULLUP;
+    GPIO_InitStruct.Speed            = GPIO_SPEED_FREQ_HIGH;
+    HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
     while (true) {
-        GPIOE->BSRR = 1 << led;
-        softDelay(400000);
-        GPIOE->BSRR = 1 << (led + 16);
-        softDelay(400000);
+        HAL_GPIO_TogglePin(GPIOE, led);
+        softDelay(40000);
     }
 }
