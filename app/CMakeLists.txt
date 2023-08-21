@@ -8,7 +8,6 @@ target_include_directories(app
 )
 
 target_link_libraries(app
-  mcu
   stm32f3xx_hal_driver
 )
 

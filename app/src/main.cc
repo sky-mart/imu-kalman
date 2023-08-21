@@ -1,16 +1,16 @@
 #include <stm32f3xx_hal.h>
-#include "stm32f3xx_hal_gpio.h"
 
-void softDelay(volatile uint32_t time)
-{
-    while (time > 0) {
-        time--;
-    }
+extern "C" {
+void SysTick_Handler(void) {
+    HAL_IncTick();
+}
 }
 
 int main()
 {
-    constexpr uint16_t led = GPIO_PIN_12;
+    constexpr uint16_t led = GPIO_PIN_10;
+
+    HAL_Init();
 
     __HAL_RCC_GPIOE_CLK_ENABLE();
 
@@ -23,6 +23,6 @@ int main()
 
     while (true) {
         HAL_GPIO_TogglePin(GPIOE, led);
-        softDelay(40000);
+        HAL_Delay(100);
     }
 }
