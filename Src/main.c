@@ -18,6 +18,10 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "cmsis_os.h"
+
+#include "console.h"
+#include <string.h>
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -42,6 +46,9 @@
 /* Private variables ---------------------------------------------------------*/
 UART_HandleTypeDef huart2;
 
+osThreadId defaultTaskHandle;
+osThreadId blinkyTaskHandle;
+osThreadId consoleTaskHandle;
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -50,13 +57,24 @@ UART_HandleTypeDef huart2;
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART2_UART_Init(void);
-/* USER CODE BEGIN PFP */
+void StartDefaultTask(void const * argument);
 
+/* USER CODE BEGIN PFP */
+void blinkyTask(void const* argument);
+void consoleTask(void const* argument);
+
+void Console_Init();
+void Console_Write(const char *str);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+CONSOLE_COMMAND_DEF(hello, "Say hello!");
 
+CONSOLE_COMMAND_DEF(led, "Sets a LED No",
+    CONSOLE_INT_ARG_DEF(led, "The LED 1...7"),
+    CONSOLE_INT_ARG_DEF(value, "The value 0-1")
+);
 /* USER CODE END 0 */
 
 /**
@@ -90,17 +108,46 @@ int main(void)
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
 
+  Console_Init();
   /* USER CODE END 2 */
 
+  /* USER CODE BEGIN RTOS_MUTEX */
+  /* add mutexes, ... */
+  /* USER CODE END RTOS_MUTEX */
+
+  /* USER CODE BEGIN RTOS_SEMAPHORES */
+  /* add semaphores, ... */
+  /* USER CODE END RTOS_SEMAPHORES */
+
+  /* USER CODE BEGIN RTOS_TIMERS */
+  /* start timers, add new ones, ... */
+  /* USER CODE END RTOS_TIMERS */
+
+  /* USER CODE BEGIN RTOS_QUEUES */
+  /* add queues, ... */
+  /* USER CODE END RTOS_QUEUES */
+
+  /* Create the thread(s) */
+  /* definition and creation of defaultTask */
+  osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 128);
+  defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
+
+  /* USER CODE BEGIN RTOS_THREADS */
+  /* add threads, ... */
+  osThreadDef(blinky, blinkyTask, osPriorityNormal, 0, 128);
+  blinkyTaskHandle = osThreadCreate(osThread(blinky), NULL);
+
+  osThreadDef(console, consoleTask, osPriorityNormal, 0, 128);
+  consoleTaskHandle = osThreadCreate(osThread(console), NULL);
+  /* USER CODE END RTOS_THREADS */
+
+  /* Start scheduler */
+  osKernelStart();
+  /* We should never get here as control is now taken by the scheduler */
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-      char c;
-      HAL_UART_Receive(&huart2, (uint8_t*)&c, sizeof(c), HAL_MAX_DELAY);
-      HAL_UART_Transmit(&huart2, (const uint8_t*)&c, sizeof(c), HAL_MAX_DELAY);
-      HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
-
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -223,8 +270,118 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+void blinkyTask(void const* argument)
+{
+  for (;;) {
+    HAL_GPIO_TogglePin(LD4_GPIO_Port, LD4_Pin);
+    osDelay(400);
+  }
+}
 
+void consoleTask(void const* argument)
+{
+#define COMMAND_SIZE 100
+
+  static uint8_t command[COMMAND_SIZE];
+  static size_t size = 0;
+
+  for (;;) {
+      if (HAL_OK == HAL_UART_Receive(&huart2, &command[size], sizeof(command[size]), 1)) {
+          size++;
+          if ('\n' == command[size - 1] || COMMAND_SIZE == size) {
+              console_process(command, size);
+              size = 0;
+          }
+      }
+  }
+}
+
+void Console_Write(const char* str)
+{
+  const size_t len = strlen(str);
+  HAL_UART_Transmit(&huart2, (const uint8_t*)str, len, HAL_MAX_DELAY);
+}
+
+void Console_Init()
+{
+  const console_init_t init_console = {
+      .write_function = Console_Write,
+  };
+
+  console_init(&init_console);
+
+  console_command_register(hello);
+  console_command_register(led);
+}
+
+static void hello_command_handler(const hello_args_t* args)
+{
+    Console_Write("Hello!\n");
+}
+
+static void led_command_handler(const led_args_t* args)
+{
+    const uint8_t led = args->led;
+    const uint8_t value = args->value;
+
+    if (led < 1 || led > 7 || value > 1)
+    {
+        Console_Write("Wrong argument\n");
+        return;
+    }
+
+    switch(led)
+    {
+        case 1: HAL_GPIO_WritePin(LD3_GPIO_Port, LD3_Pin, value); break;
+        case 2: HAL_GPIO_WritePin(LD5_GPIO_Port, LD5_Pin, value); break;
+        case 3: HAL_GPIO_WritePin(LD7_GPIO_Port, LD7_Pin, value); break;
+        case 4: HAL_GPIO_WritePin(LD9_GPIO_Port, LD9_Pin, value); break;
+        case 5: HAL_GPIO_WritePin(LD10_GPIO_Port, LD10_Pin, value); break;
+        case 6: HAL_GPIO_WritePin(LD8_GPIO_Port, LD8_Pin, value); break;
+        case 7: HAL_GPIO_WritePin(LD6_GPIO_Port, LD6_Pin, value); break;
+        default: break;
+    }
+}
 /* USER CODE END 4 */
+
+/* USER CODE BEGIN Header_StartDefaultTask */
+/**
+  * @brief  Function implementing the defaultTask thread.
+  * @param  argument: Not used
+  * @retval None
+  */
+/* USER CODE END Header_StartDefaultTask */
+void StartDefaultTask(void const * argument)
+{
+  /* USER CODE BEGIN 5 */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END 5 */
+}
+
+/**
+  * @brief  Period elapsed callback in non blocking mode
+  * @note   This function is called  when TIM1 interrupt took place, inside
+  * HAL_TIM_IRQHandler(). It makes a direct call to HAL_IncTick() to increment
+  * a global variable "uwTick" used as application time base.
+  * @param  htim : TIM handle
+  * @retval None
+  */
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+  /* USER CODE BEGIN Callback 0 */
+
+  /* USER CODE END Callback 0 */
+  if (htim->Instance == TIM1) {
+    HAL_IncTick();
+  }
+  /* USER CODE BEGIN Callback 1 */
+
+  /* USER CODE END Callback 1 */
+}
 
 /**
   * @brief  This function is executed in case of error occurrence.
