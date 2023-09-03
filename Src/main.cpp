@@ -23,8 +23,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "console.h"
-#include <string.h>
-#include <stdio.h>
+#include "console_commands.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -43,6 +42,9 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+#ifdef __cplusplus
+extern "C" {
+#endif // __cplusplus
 I2C_HandleTypeDef hi2c1;
 
 SPI_HandleTypeDef hspi1;
@@ -61,14 +63,12 @@ static void MX_GPIO_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_SPI1_Init(void);
 static void MX_I2C1_Init(void);
+
 void StartDefaultTask(void const * argument);
 
 /* USER CODE BEGIN PFP */
 void blinkyTask(void const* argument);
 void consoleTask(void const* argument);
-
-void Console_Init();
-void Console_Write(const char* str);
 
 void GYRO_CS_Low();
 void GYRO_CS_High();
@@ -77,20 +77,15 @@ void GYRO_Write(uint8_t address, uint8_t value);
 
 uint8_t ACCEL_Read(uint8_t address);
 void ACCEL_Write(uint8_t address, uint8_t value);
+#ifdef __cplusplus
+}
+#endif // __cplusplus
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-CONSOLE_COMMAND_DEF(hello, "Say hello!");
 
-CONSOLE_COMMAND_DEF(led, "Sets a LED No",
-    CONSOLE_INT_ARG_DEF(led, "The LED 1...7"),
-    CONSOLE_INT_ARG_DEF(value, "The value 0-1")
-);
 
-CONSOLE_COMMAND_DEF(spi, "Read whoami of L3GD20");
-
-CONSOLE_COMMAND_DEF(i2c, "Read CTRL_REG_1_A of LSM303DLHC");
 /* USER CODE END 0 */
 
 /**
@@ -173,6 +168,9 @@ int main(void)
   /* USER CODE END 3 */
 }
 
+#ifdef __cplusplus
+extern "C" {
+#endif // __cplusplus
 /**
   * @brief System Clock Configuration
   * @retval None
@@ -408,71 +406,6 @@ void consoleTask(void const* argument)
   }
 }
 
-void Console_Write(const char* str)
-{
-  const size_t len = strlen(str);
-  HAL_UART_Transmit(&huart2, (const uint8_t*)str, len, HAL_MAX_DELAY);
-}
-
-void Console_Init()
-{
-  const console_init_t init_console = {
-      .write_function = Console_Write,
-  };
-
-  console_init(&init_console);
-
-  console_command_register(hello);
-  console_command_register(led);
-  console_command_register(spi);
-  console_command_register(i2c);
-}
-
-static void hello_command_handler(const hello_args_t* args)
-{
-    Console_Write("Hello!\n");
-}
-
-static void led_command_handler(const led_args_t* args)
-{
-    const uint8_t led = args->led;
-    const uint8_t value = args->value;
-
-    if (led < 1 || led > 7 || value > 1)
-    {
-        Console_Write("Wrong argument\n");
-        return;
-    }
-
-    switch(led)
-    {
-        case 1: HAL_GPIO_WritePin(LD3_GPIO_Port, LD3_Pin, value); break;
-        case 2: HAL_GPIO_WritePin(LD5_GPIO_Port, LD5_Pin, value); break;
-        case 3: HAL_GPIO_WritePin(LD7_GPIO_Port, LD7_Pin, value); break;
-        case 4: HAL_GPIO_WritePin(LD9_GPIO_Port, LD9_Pin, value); break;
-        case 5: HAL_GPIO_WritePin(LD10_GPIO_Port, LD10_Pin, value); break;
-        case 6: HAL_GPIO_WritePin(LD8_GPIO_Port, LD8_Pin, value); break;
-        case 7: HAL_GPIO_WritePin(LD6_GPIO_Port, LD6_Pin, value); break;
-        default: break;
-    }
-}
-
-static void spi_command_handler(const spi_args_t* args)
-{
-    char str[20];
-    const uint8_t whoami = GYRO_Read(0xF);
-    snprintf(str, sizeof(str), "whoami=0x%X\n", whoami);
-    Console_Write(str);
-}
-
-static void i2c_command_handler(const i2c_args_t* args)
-{
-    char str[20];
-    const uint8_t ctrl_reg_1_a = ACCEL_Read(0x20);
-    snprintf(str, sizeof(str), "ctrl_reg_1_a=0x%X\n", ctrl_reg_1_a);
-    Console_Write(str);
-}
-
 void GYRO_CS_Low()
 {
     HAL_GPIO_WritePin(GYRO_CS_GPIO_Port, GYRO_CS_Pin, GPIO_PIN_RESET);
@@ -580,3 +513,7 @@ void assert_failed(uint8_t *file, uint32_t line)
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
+
+#ifdef __cplusplus
+}
+#endif // __cplusplus

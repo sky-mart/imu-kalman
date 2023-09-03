@@ -21,9 +21,9 @@
  * Version 1.02
  *    Control functions for short timeouts in microsecond resolution:
  *    Added: osKernelSysTick, osKernelSysTickFrequency, osKernelSysTickMicroSec
- *    Removed: osSignalGet 
- *    
- *  
+ *    Removed: osSignalGet
+ *
+ *
  *----------------------------------------------------------------------------
  *
  * Portions Copyright © 2016 STMicroelectronics International N.V. All rights reserved.
@@ -211,7 +211,7 @@ typedef enum {
 	osThreadReady     = 0x1 ,			        /* The thread being queried is in a read or pending ready list. */
 	osThreadBlocked   = 0x2,		        /* The thread being queried is in the Blocked state. */
 	osThreadSuspended = 0x3,	      /* The thread being queried is in the Suspended state, or is in the Blocked state with an infinite time out. */
-	osThreadDeleted   = 0x4,		          /* The thread being queried has been deleted, but its TCB has not yet been freed. */   
+	osThreadDeleted   = 0x4,		          /* The thread being queried has been deleted, but its TCB has not yet been freed. */
   osThreadError     = 0x7FFFFFFF
 } osThreadState;
 #endif /* INCLUDE_eTaskGetState */
@@ -266,7 +266,7 @@ typedef struct os_mailQ_cb *osMailQId;
 
 typedef StaticTask_t               osStaticThreadDef_t;
 typedef StaticTimer_t              osStaticTimerDef_t;
-typedef StaticSemaphore_t          osStaticMutexDef_t;         
+typedef StaticSemaphore_t          osStaticMutexDef_t;
 typedef StaticSemaphore_t          osStaticSemaphoreDef_t;
 typedef StaticQueue_t              osStaticMessageQDef_t;
 
@@ -278,7 +278,7 @@ typedef StaticQueue_t              osStaticMessageQDef_t;
 /// Thread Definition structure contains startup information of a thread.
 /// \note CAN BE CHANGED: \b os_thread_def is implementation specific in every CMSIS-RTOS.
 typedef struct os_thread_def  {
-  char                   *name;        ///< Thread name 
+  char                   *name;        ///< Thread name
   os_pthread             pthread;      ///< start address of thread function
   osPriority             tpriority;    ///< initial thread priority
   uint32_t               instances;    ///< maximum number of instances of that thread function
@@ -380,9 +380,9 @@ int32_t osKernelRunning(void);
 
 #if (defined (osFeature_SysTick)  &&  (osFeature_SysTick != 0))     // System Timer available
 
-/// Get the RTOS kernel system timer counter 
+/// Get the RTOS kernel system timer counter
 /// \note MUST REMAIN UNCHANGED: \b osKernelSysTick shall be consistent in every CMSIS-RTOS.
-/// \return RTOS kernel system timer as 32-bit value 
+/// \return RTOS kernel system timer as 32-bit value
 uint32_t osKernelSysTick (void);
 
 /// The RTOS kernel system timer frequency in Hz
@@ -413,16 +413,16 @@ extern const osThreadDef_t os_thread_def_##name
 #if( configSUPPORT_STATIC_ALLOCATION == 1 )
 #define osThreadDef(name, thread, priority, instances, stacksz)  \
 const osThreadDef_t os_thread_def_##name = \
-{ #name, (thread), (priority), (instances), (stacksz), NULL, NULL }
+{ (char*)#name, (thread), (priority), (instances), (stacksz), NULL, NULL }
 
 #define osThreadStaticDef(name, thread, priority, instances, stacksz, buffer, control)  \
 const osThreadDef_t os_thread_def_##name = \
-{ #name, (thread), (priority), (instances), (stacksz), (buffer), (control) }
+{ (char*)#name, (thread), (priority), (instances), (stacksz), (buffer), (control) }
 #else //configSUPPORT_STATIC_ALLOCATION == 0
 
 #define osThreadDef(name, thread, priority, instances, stacksz)  \
 const osThreadDef_t os_thread_def_##name = \
-{ #name, (thread), (priority), (instances), (stacksz)}
+{ (char*)#name, (thread), (priority), (instances), (stacksz)}
 #endif
 #endif
 
@@ -499,7 +499,7 @@ osEvent osWait (uint32_t millisec);
 extern const osTimerDef_t os_timer_def_##name
 #else                            // define the object
 
-#if( configSUPPORT_STATIC_ALLOCATION == 1 ) 
+#if( configSUPPORT_STATIC_ALLOCATION == 1 )
 #define osTimerDef(name, function)  \
 const osTimerDef_t os_timer_def_##name = \
 { (function), NULL }
@@ -937,7 +937,7 @@ osStatus osThreadResumeAll (void);
 
 /**
 * @brief  Delay a task until a specified time
-* @param   PreviousWakeTime   Pointer to a variable that holds the time at which the 
+* @param   PreviousWakeTime   Pointer to a variable that holds the time at which the
 *          task was last unblocked. PreviousWakeTime must be initialised with the current time
 *          prior to its first use (PreviousWakeTime = osKernelSysTick() )
 * @param   millisec    time delay value
@@ -947,13 +947,13 @@ osStatus osDelayUntil (uint32_t *PreviousWakeTime, uint32_t millisec);
 
 /**
 * @brief   Abort the delay for a specific thread
-* @param   thread_id   thread ID obtained by \ref osThreadCreate or \ref osThreadGetId   
+* @param   thread_id   thread ID obtained by \ref osThreadCreate or \ref osThreadGetId
 * @retval  status code that indicates the execution status of the function.
 */
 osStatus osAbortDelay(osThreadId thread_id);
 
 /**
-* @brief   Lists all the current threads, along with their current state 
+* @brief   Lists all the current threads, along with their current state
 *          and stack usage high water mark.
 * @param   buffer   A buffer into which the above mentioned details
 *          will be written

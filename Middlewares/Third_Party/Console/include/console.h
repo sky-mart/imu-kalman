@@ -6,6 +6,10 @@
 #include <inttypes.h>
 #include <stdbool.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif // __cplusplus
+
 #define CONSOLE_INT_ARG_DEFAULT ((intptr_t)-1)
 #define CONSOLE_STR_ARG_DEFAULT ((const char*)NULL)
 
@@ -61,8 +65,8 @@ typedef struct {
         _CONSOLE_MAP(_CONSOLE_ARG_TYPE_WITH_DESC_HELPER, ##__VA_ARGS__) \
         const void* const __dummy; /* dummy entry so the struct isn't empty */ \
     } CMD##_args_t; \
-    _Static_assert(sizeof(CMD##_args_t) == (_CONSOLE_NUM_ARGS(__VA_ARGS__) + 1) * sizeof(void *), \
-        "Compiler created *_args_t struct of unexpected size"); \
+    /* _Static_assert(sizeof(CMD##_args_t) == (_CONSOLE_NUM_ARGS(__VA_ARGS__) + 1) * sizeof(void *), \
+       "Compiler created *_args_t struct of unexpected size"); */       \
     static void CMD##_command_handler(const CMD##_args_t* args); \
     static const console_arg_def_t _##CMD##_ARGS_DEF[] = { \
         _CONSOLE_MAP(_CONSOLE_ARG_DEF_WITH_DESC_HELPER, ##__VA_ARGS__) \
@@ -134,4 +138,9 @@ void console_process(const uint8_t* data, uint32_t length);
 #if CONSOLE_FULL_CONTROL
 // Prints a string (should end with a '\n') without visibly corrupting the current command line
 void console_print_line(const char* str);
+
+#ifdef __cplusplus
+}
+#endif  // __cplusplus
+
 #endif
