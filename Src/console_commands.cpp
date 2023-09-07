@@ -1,16 +1,13 @@
 #include "console_commands.h"
 #include "main.h"
 #include "console.h"
+#include "l3gd20.h"
 #include <string.h>
 #include <stdio.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif // __cplusplus
-
+extern mart::L3GD20 gyroscope;
 extern UART_HandleTypeDef huart2;
 
-uint8_t GYRO_Read(uint8_t address);
 uint8_t ACCEL_Read(uint8_t address);
 
 CONSOLE_COMMAND_DEF(hello, "Say hello!");
@@ -75,9 +72,12 @@ static void led_command_handler(const led_args_t* args)
 
 static void spi_command_handler(const spi_args_t* args)
 {
-    char str[20];
-    const uint8_t whoami = GYRO_Read(0xF);
-    snprintf(str, sizeof(str), "whoami=0x%X\n", whoami);
+    char str[30];
+
+    mart::L3GD20::AngularRates rates;
+    gyroscope.read(rates);
+    snprintf(str, sizeof(str), "x=%d, y=%d, z=%d\n", rates.x, rates.y, rates.z);
+
     Console_Write(str);
 }
 
@@ -88,9 +88,3 @@ static void i2c_command_handler(const i2c_args_t* args)
     snprintf(str, sizeof(str), "ctrl_reg_1_a=0x%X\n", ctrl_reg_1_a);
     Console_Write(str);
 }
-
-
-
-#ifdef __cplusplus
-}
-#endif // __cplusplus

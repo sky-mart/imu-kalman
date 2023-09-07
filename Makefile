@@ -74,7 +74,8 @@ Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_spi_ex.c \
 Src/console_commands.c
 
 CXX_SOURCES = \
-Src/main.cpp
+Src/main.cpp \
+Src/l3gd20.cpp
 
 # ASM sources
 ASM_SOURCES =  \

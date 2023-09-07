@@ -24,6 +24,8 @@
 /* USER CODE BEGIN Includes */
 #include "console.h"
 #include "console_commands.h"
+#include "l3gd20.h"
+#include <stdio.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -55,6 +57,9 @@ osThreadId defaultTaskHandle;
 /* USER CODE BEGIN PV */
 osThreadId blinkyTaskHandle;
 osThreadId consoleTaskHandle;
+osThreadId gyroTaskHandle;
+
+mart::L3GD20 gyroscope(GYRO_CS_GPIO_Port, GYRO_CS_Pin, hspi1);
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -69,17 +74,14 @@ void StartDefaultTask(void const * argument);
 /* USER CODE BEGIN PFP */
 void blinkyTask(void const* argument);
 void consoleTask(void const* argument);
+void gyroTask(void const* argument);
 
-void GYRO_CS_Low();
-void GYRO_CS_High();
-uint8_t GYRO_Read(uint8_t address);
-void GYRO_Write(uint8_t address, uint8_t value);
-
-uint8_t ACCEL_Read(uint8_t address);
 void ACCEL_Write(uint8_t address, uint8_t value);
 #ifdef __cplusplus
 }
-#endif // __cplusplus
+#endif  // __cplusplus
+
+uint8_t ACCEL_Read(uint8_t address);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -122,6 +124,8 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   Console_Init();
+
+  gyroscope.write(mart::L3GD20::Register::CTRL_REG1, 0x1F);
   /* USER CODE END 2 */
 
   /* USER CODE BEGIN RTOS_MUTEX */
@@ -152,6 +156,9 @@ int main(void)
 
   osThreadDef(console, consoleTask, osPriorityNormal, 0, 128);
   consoleTaskHandle = osThreadCreate(osThread(console), NULL);
+
+  osThreadDef(gyro, gyroTask, osPriorityNormal, 0, 128);
+  gyroTaskHandle = osThreadCreate(osThread(gyro), NULL);
   /* USER CODE END RTOS_THREADS */
 
   /* Start scheduler */
@@ -406,30 +413,22 @@ void consoleTask(void const* argument)
   }
 }
 
-void GYRO_CS_Low()
+void gyroTask(void const* argument)
 {
-    HAL_GPIO_WritePin(GYRO_CS_GPIO_Port, GYRO_CS_Pin, GPIO_PIN_RESET);
+    char str[40];
+    mart::L3GD20::AngularRates rates;
+
+    for (;;) {
+        gyroscope.read(rates);
+        snprintf(str, sizeof(str), "gyro: x=%d, y=%d, z=%d\n", rates.x, rates.y, rates.z);
+        Console_Write(str);
+        osDelay(100);
+    }
 }
 
-void GYRO_CS_High()
-{
-    HAL_GPIO_WritePin(GYRO_CS_GPIO_Port, GYRO_CS_Pin, GPIO_PIN_SET);
+#ifdef __cplusplus
 }
-
-uint8_t GYRO_Read(uint8_t address)
-{
-    uint8_t value;
-    address |= 0x80; // read bit
-
-    GYRO_CS_Low();
-    // TODO: handle error codes
-    HAL_SPI_Transmit(&hspi1, &address, sizeof(address), 10);
-    HAL_SPI_Receive(&hspi1, &value, sizeof(value), 10);
-    GYRO_CS_High();
-    return value;
-}
-/* void GYRO_Write(uint8_t address, uint8_t value); */
-
+#endif // __cplusplus
 uint8_t ACCEL_Read(uint8_t address)
 {
     const uint16_t ACCEL_READ_ADDR = 0x33;
@@ -438,6 +437,9 @@ uint8_t ACCEL_Read(uint8_t address)
     HAL_I2C_Mem_Read(&hi2c1, ACCEL_READ_ADDR, (uint16_t)address, sizeof(address), &value, sizeof(value), 10);
     return value;
 }
+#ifdef __cplusplus
+extern "C" {
+#endif // __cplusplus
 
 /* void ACCEL_Write(uint8_t address, uint8_t value); */
 
