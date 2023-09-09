@@ -2,10 +2,12 @@
 #include "main.h"
 #include "console.h"
 #include "l3gd20.h"
+#include "lsm303dlhc.h"
 #include <string.h>
 #include <stdio.h>
 
 extern mart::L3GD20 gyroscope;
+extern mart::Lsm303dlhc lsm303dlhc;
 extern UART_HandleTypeDef huart2;
 
 uint8_t ACCEL_Read(uint8_t address);
@@ -84,7 +86,13 @@ static void spi_command_handler(const spi_args_t* args)
 static void i2c_command_handler(const i2c_args_t* args)
 {
     char str[20];
-    const uint8_t ctrl_reg_1_a = ACCEL_Read(0x20);
-    snprintf(str, sizeof(str), "ctrl_reg_1_a=0x%X\n", ctrl_reg_1_a);
+    lsm303dlhc.write(mart::Lsm303dlhc::AccRegister::CTRL_REG1_A, 0x57);
+    const uint8_t ctrl_reg1_a = lsm303dlhc.read(mart::Lsm303dlhc::AccRegister::CTRL_REG1_A);
+    snprintf(str, sizeof(str), "ctrl_reg1_a=0x%X\n", ctrl_reg1_a);
+    Console_Write(str);
+
+    lsm303dlhc.write(mart::Lsm303dlhc::MagRegister::CRA_REG_M, 0x18);
+    const uint8_t cra_reg_m = lsm303dlhc.read(mart::Lsm303dlhc::MagRegister::CRA_REG_M);
+    snprintf(str, sizeof(str), "cra_reg_m=0x%X\n", cra_reg_m);
     Console_Write(str);
 }

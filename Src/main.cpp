@@ -25,6 +25,7 @@
 #include "console.h"
 #include "console_commands.h"
 #include "l3gd20.h"
+#include "lsm303dlhc.h"
 #include <stdio.h>
 /* USER CODE END Includes */
 
@@ -57,9 +58,10 @@ osThreadId defaultTaskHandle;
 /* USER CODE BEGIN PV */
 osThreadId blinkyTaskHandle;
 osThreadId consoleTaskHandle;
-osThreadId gyroTaskHandle;
+osThreadId sensorsTaskHandle;
 
 mart::L3GD20 gyroscope(GYRO_CS_GPIO_Port, GYRO_CS_Pin, hspi1);
+mart::Lsm303dlhc lsm303dlhc(hi2c1);
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -74,14 +76,12 @@ void StartDefaultTask(void const * argument);
 /* USER CODE BEGIN PFP */
 void blinkyTask(void const* argument);
 void consoleTask(void const* argument);
-void gyroTask(void const* argument);
+void sensorsTask(void const* argument);
 
-void ACCEL_Write(uint8_t address, uint8_t value);
 #ifdef __cplusplus
 }
 #endif  // __cplusplus
 
-uint8_t ACCEL_Read(uint8_t address);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -126,6 +126,12 @@ int main(void)
   Console_Init();
 
   gyroscope.write(mart::L3GD20::Register::CTRL_REG1, 0x1F);
+
+  lsm303dlhc.write(mart::Lsm303dlhc::AccRegister::CTRL_REG4_A, 0x38); // +-16G, highres
+  lsm303dlhc.write(mart::Lsm303dlhc::AccRegister::CTRL_REG1_A, 0x57); // 3-axis, 100 Hz, normal mode
+
+  lsm303dlhc.write(mart::Lsm303dlhc::MagRegister::CRA_REG_M, 0x18); // 3-axis, 75 Hz, normal mode
+  lsm303dlhc.write(mart::Lsm303dlhc::MagRegister::MR_REG_M, 0x00); // continuos mode
   /* USER CODE END 2 */
 
   /* USER CODE BEGIN RTOS_MUTEX */
@@ -157,8 +163,8 @@ int main(void)
   osThreadDef(console, consoleTask, osPriorityNormal, 0, 128);
   consoleTaskHandle = osThreadCreate(osThread(console), NULL);
 
-  osThreadDef(gyro, gyroTask, osPriorityNormal, 0, 128);
-  gyroTaskHandle = osThreadCreate(osThread(gyro), NULL);
+  osThreadDef(sensors, sensorsTask, osPriorityNormal, 0, 128);
+  sensorsTaskHandle = osThreadCreate(osThread(sensors), NULL);
   /* USER CODE END RTOS_THREADS */
 
   /* Start scheduler */
@@ -413,35 +419,28 @@ void consoleTask(void const* argument)
   }
 }
 
-void gyroTask(void const* argument)
+void sensorsTask(void const* argument)
 {
     char str[40];
     mart::L3GD20::AngularRates rates;
+    mart::Lsm303dlhc::Vector3 vec;
 
     for (;;) {
         gyroscope.read(rates);
-        snprintf(str, sizeof(str), "gyro: x=%d, y=%d, z=%d\n", rates.x, rates.y, rates.z);
+        snprintf(str, sizeof(str), "gyr: x=%d, y=%d, z=%d\n", rates.x, rates.y, rates.z);
         Console_Write(str);
+
+        lsm303dlhc.readAcceleration(vec);
+        snprintf(str, sizeof(str), "acc: x=%d, y=%d, z=%d\n", vec.x, vec.y, vec.z);
+        Console_Write(str);
+
+        lsm303dlhc.readMagneticField(vec);
+        snprintf(str, sizeof(str), "mag: x=%d, y=%d, z=%d\n", vec.x, vec.y, vec.z);
+        Console_Write(str);
+
         osDelay(100);
     }
 }
-
-#ifdef __cplusplus
-}
-#endif // __cplusplus
-uint8_t ACCEL_Read(uint8_t address)
-{
-    const uint16_t ACCEL_READ_ADDR = 0x33;
-    uint8_t value;
-    // TODO: handle error codes
-    HAL_I2C_Mem_Read(&hi2c1, ACCEL_READ_ADDR, (uint16_t)address, sizeof(address), &value, sizeof(value), 10);
-    return value;
-}
-#ifdef __cplusplus
-extern "C" {
-#endif // __cplusplus
-
-/* void ACCEL_Write(uint8_t address, uint8_t value); */
 
 /* USER CODE END 4 */
 
