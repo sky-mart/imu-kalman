@@ -95,12 +95,14 @@ CXX = $(GCC_PATH)/$(PREFIX)g++
 AS = $(GCC_PATH)/$(PREFIX)gcc -x assembler-with-cpp
 CP = $(GCC_PATH)/$(PREFIX)objcopy
 SZ = $(GCC_PATH)/$(PREFIX)size
+DBG = $(GCC_PATH)/$(PREFIX)gdb
 else
 CC = $(PREFIX)gcc
 CXX = $(PREFIX)g++
 AS = $(PREFIX)gcc -x assembler-with-cpp
 CP = $(PREFIX)objcopy
 SZ = $(PREFIX)size
+DBG = $(PREFIX)gdb
 endif
 HEX = $(CP) -O ihex
 BIN = $(CP) -O binary -S
@@ -221,6 +223,25 @@ $(BUILD_DIR)/%.bin: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
 
 $(BUILD_DIR):
 	mkdir $@
+
+#######################################
+# flash
+#######################################
+flash: $(BUILD_DIR)/$(TARGET).bin
+	st-flash write $(BUILD_DIR)/$(TARGET).bin 0x08000000
+
+#######################################
+# erase-flash
+#######################################
+erase-flash:
+	st-flash erase
+
+#######################################
+# debug
+#######################################
+# required: openocd -f board/stm32f3discovery.cfg
+debug: $(BUILD_DIR)/$(TARGET).elf
+	$(DBG) $(BUILD_DIR)/$(TARGET).elf -ex 'target remote localhost:3333' -ex 'monitor reset halt'
 
 #######################################
 # clean up

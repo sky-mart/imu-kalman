@@ -3,10 +3,16 @@ Inertial Measurement Unit using Kalman filtering
 
 ## Build
 ```
-cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=1 -DCMAKE_BUILD_TYPE=Debug -DCMAKE_TOOLCHAIN_FILE=arm-none-eabi.cmake -DCMSIS_DIR="/path/to/cmsis/include/". -B build/ && VERBOSE=1 make -C build/ app
+make build
 ```
 
 ## Flash
 ```
-make -C build/ app-flash
+make flash
+```
+
+## Debug
+```
+# openocd -f board/stm32f3discovery.cfg
+make debug
 ```
