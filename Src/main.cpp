@@ -421,12 +421,11 @@ void consoleTask(void const* argument)
 
 void sensorsTask(void const* argument)
 {
-    mart::L3GD20::AngularRates rates;
-    mart::Lsm303dlhc::Vector3 vec;
+    Vector3 vec;
 
     for (;;) {
-        gyroscope.read(rates);
-        Console_Printf("gyr: x=%d, y=%d, z=%d\n", rates.x, rates.y, rates.z);
+        gyroscope.read(vec);
+        Console_Printf("gyr: x=%d, y=%d, z=%d\n", vec.x, vec.y, vec.z);
 
         lsm303dlhc.readAcceleration(vec);
         Console_Printf("acc: x=%d, y=%d, z=%d\n", vec.x, vec.y, vec.z);

@@ -1,6 +1,7 @@
 #ifndef LSM303DLHC_H
 #define LSM303DLHC_H
 
+#include "types.h"
 #include "stm32f3xx_hal.h"
 
 namespace mart
@@ -58,12 +59,6 @@ public:
         IRC_REG_M = 0x0C,
         TEMP_OUT_H_M = 0x31,
         TEMP_OUT_L_M = 0x32
-    };
-
-    struct Vector3 {
-        int16_t x;
-        int16_t y;
-        int16_t z;
     };
 
     explicit Lsm303dlhc(I2C_HandleTypeDef& hi2c);

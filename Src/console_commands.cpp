@@ -87,7 +87,7 @@ static void led_command_handler(const led_args_t* args)
 
 static void spi_command_handler(const spi_args_t* args)
 {
-    mart::L3GD20::AngularRates rates;
+    Vector3 rates;
     gyroscope.read(rates);
     Console_Printf("x=%d, y=%d, z=%d\n", rates.x, rates.y, rates.z);
 }

@@ -55,7 +55,7 @@ void L3GD20::multiWrite(Register startReg, uint8_t* data, uint8_t count)
     csHigh();
 }
 
-void L3GD20::read(AngularRates& angularRates)
+void L3GD20::read(Vector3& angularRates)
 {
     uint8_t data[6];
     multiRead(mart::L3GD20::Register::OUT_X_L, data, sizeof(data));

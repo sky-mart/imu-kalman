@@ -1,6 +1,7 @@
 #ifndef L3GD20_H
 #define L3GD20_H
 
+#include "types.h"
 #include "stm32f3xx_hal.h"
 
 namespace mart
@@ -38,12 +39,6 @@ public:
         INT1_DURATION = 0x38
     };
 
-    struct AngularRates {
-        int16_t x;
-        int16_t y;
-        int16_t z;
-    };
-
     L3GD20(GPIO_TypeDef* csPort, uint16_t csPin, SPI_HandleTypeDef& hspi);
 
     uint8_t read(Register reg);
@@ -52,7 +47,7 @@ public:
     void multiRead(Register startReg, uint8_t* data, uint8_t count);
     void multiWrite(Register startReg, uint8_t* data, uint8_t count);
 
-    void read(AngularRates& angularRates);
+    void read(Vector3& angularRates);
 
 private:
     void csLow();
