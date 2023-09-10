@@ -421,22 +421,18 @@ void consoleTask(void const* argument)
 
 void sensorsTask(void const* argument)
 {
-    char str[40];
     mart::L3GD20::AngularRates rates;
     mart::Lsm303dlhc::Vector3 vec;
 
     for (;;) {
         gyroscope.read(rates);
-        snprintf(str, sizeof(str), "gyr: x=%d, y=%d, z=%d\n", rates.x, rates.y, rates.z);
-        Console_Write(str);
+        Console_Printf("gyr: x=%d, y=%d, z=%d\n", rates.x, rates.y, rates.z);
 
         lsm303dlhc.readAcceleration(vec);
-        snprintf(str, sizeof(str), "acc: x=%d, y=%d, z=%d\n", vec.x, vec.y, vec.z);
-        Console_Write(str);
+        Console_Printf("acc: x=%d, y=%d, z=%d\n", vec.x, vec.y, vec.z);
 
         lsm303dlhc.readMagneticField(vec);
-        snprintf(str, sizeof(str), "mag: x=%d, y=%d, z=%d\n", vec.x, vec.y, vec.z);
-        Console_Write(str);
+        Console_Printf("mag: x=%d, y=%d, z=%d\n", vec.x, vec.y, vec.z);
 
         osDelay(100);
     }
