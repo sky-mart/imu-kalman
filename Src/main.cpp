@@ -45,9 +45,6 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-#ifdef __cplusplus
-extern "C" {
-#endif // __cplusplus
 I2C_HandleTypeDef hi2c1;
 
 SPI_HandleTypeDef hspi1;
@@ -77,10 +74,6 @@ void StartDefaultTask(void const * argument);
 void blinkyTask(void const* argument);
 void consoleTask(void const* argument);
 void sensorsTask(void const* argument);
-
-#ifdef __cplusplus
-}
-#endif  // __cplusplus
 
 /* USER CODE END PFP */
 
@@ -181,9 +174,6 @@ int main(void)
   /* USER CODE END 3 */
 }
 
-#ifdef __cplusplus
-extern "C" {
-#endif // __cplusplus
 /**
   * @brief System Clock Configuration
   * @retval None
@@ -509,7 +499,3 @@ void assert_failed(uint8_t *file, uint32_t line)
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
-
-#ifdef __cplusplus
-}
-#endif // __cplusplus
