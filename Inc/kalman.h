@@ -1,6 +1,8 @@
 #ifndef KALMAN_H
 #define KALMAN_H
 
+#include <initializer_list>
+#include <algorithm>
 #include <cstdint>
 
 namespace mart
@@ -35,8 +37,35 @@ public:
     using Type = T;
     static constexpr uint16_t Size = size;
 
+    Vector() {}
+
+    Vector(std::initializer_list<T> il) {
+        std::copy(il.begin(), il.end(), data_);
+    }
+
+    T& operator[](uint16_t i) { return data_[i]; }
+
+    T operator[](uint16_t i) const { return data_[i]; }
+
+    Vector<T, size> operator+(const Vector<T, size>& rhs) const
+    {
+        Vector<T, size> result;
+        for (uint16_t i = 0; i < size; ++i) {
+            result[i] = data_[i] + rhs[i];
+        }
+        return result;
+    }
+
+    Vector<T, size>& operator+=(const Vector<T, size>& rhs)
+    {
+        for (uint16_t i = 0; i < size; ++i) {
+            data_[i] += rhs[i];
+        }
+        return *this;
+    }
+
 private:
-    T data_[size];
+    T data_[size]{};
 };
 
 template <class T, uint16_t nrows, uint16_t ncols>
@@ -47,19 +76,84 @@ public:
     static constexpr uint16_t NumRows = nrows;
     static constexpr uint16_t NumCols = ncols;
 
-    Vector<T, nrows> operator*(const Vector<T, ncols>& vec) const;
+    Matrix() {}
+
+    Matrix(std::initializer_list<T> il) {
+        std::copy(il.begin(), il.end(), data_);
+    }
+
+    T& operator()(uint16_t row, uint16_t col) { return data_[row * ncols + col]; }
+
+    T operator()(uint16_t row, uint16_t col) const { return data_[row * ncols + col]; }
+
+    Matrix<T, nrows, ncols> operator+(const Matrix<T, nrows, ncols>& rhs) const
+    {
+        Matrix<T, nrows, ncols> result;
+        for (uint16_t i = 0; i < nrows * ncols; ++i) {
+            result.data_[i] = data_[i] + rhs.data_[i];
+        }
+        return result;
+    }
+
+    Matrix<T, nrows, ncols>& operator+=(const Matrix<T, nrows, ncols>& rhs)
+    {
+        for (uint16_t i = 0; i < nrows * ncols; ++i) {
+            data_[i] += rhs.data_[i];
+        }
+        return *this;
+    }
+
+    Vector<T, nrows> operator*(const Vector<T, ncols>& vec) const
+    {
+        Vector<T, nrows> result;
+        for (uint16_t row = 0; row < nrows; ++row) {
+            for (uint16_t col = 0; col < ncols; ++col) {
+                result[row] += at(row, col) * vec[col];
+            }
+        }
+        return result;
+    }
+
 
     template <uint16_t size>
-    Matrix<T, nrows, size> operator*(const Matrix<T, ncols, size>& mat) const;
+    Matrix<T, nrows, size> operator*(const Matrix<T, ncols, size>& mat) const
+    {
+        Matrix<T, nrows, size> result;
+        for (uint16_t row = 0; row < nrows; ++row) {
+            for (uint16_t col = 0; col < size; ++col) {
+                for (uint16_t i = 0; i < ncols; ++i) {
+                    result(row, col) += at(row, i) * mat(i, col);
+                }
+            }
+        }
+        return result;
+    }
 
-    Matrix<T, ncols, nrows> transpose() const;
-    void transpose(Matrix<T, ncols, nrows>& tr) const;
+    Matrix<T, ncols, nrows> transpose() const
+    {
+        Matrix<T, nrows, ncols> result;
+        transpose(result);
+        return result;
+    }
+
+    void transpose(Matrix<T, ncols, nrows>& tr) const
+    {
+        for (uint16_t row = 0; row < nrows; ++row) {
+            for (uint16_t col = 0; col < ncols; ++col) {
+                tr(row, col) = at(col, row);
+            }
+        }
+    }
 
     Matrix<T, nrows, nrows> inverse() const;
     void inverse(Matrix<T, nrows, nrows>& inv) const;
 
 private:
-    T data_[nrows * ncols];
+    T& at(uint16_t row, uint16_t col) { return data_[row * ncols + col]; }
+
+    T at(uint16_t row, uint16_t col) const { return data_[row * ncols + col]; }
+
+    T data_[nrows * ncols]{};
 };
 
 template <class A, class R, class C, class Q>
