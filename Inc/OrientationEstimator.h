@@ -8,16 +8,11 @@ namespace mart {
 class OrientationEstimator
 {
 public:
+    using EKF = ExtendedKalmanFilter<float, 9, 9>;
+
     OrientationEstimator();
 
 private:
-    using EKF = ExtendedKalmanFilter<float, 9, 9>;
-    using State = typename EKF::State;
-    using Measurement = typename EKF::Measurement;
-
-    static State process(const State& prevState);
-    static Measurement measurement(const State& state);
-
     EKF ekf_;
 };
 

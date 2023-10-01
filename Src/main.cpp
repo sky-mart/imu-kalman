@@ -26,6 +26,7 @@
 #include "console_commands.h"
 #include "l3gd20.h"
 #include "lsm303dlhc.h"
+#include "OrientationEstimator.h"
 #include <stdio.h>
 /* USER CODE END Includes */
 
@@ -59,6 +60,8 @@ osThreadId sensorsTaskHandle;
 
 mart::L3GD20 gyroscope(GYRO_CS_GPIO_Port, GYRO_CS_Pin, hspi1);
 mart::Lsm303dlhc lsm303dlhc(hi2c1);
+
+mart::OrientationEstimator orientationEstimator;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/

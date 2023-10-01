@@ -95,6 +95,7 @@ public:
         for (uint16_t i = 0; i < nrows; ++i) {
             result(i, i) = 1;
         }
+        return result;
     }
 
 private:

@@ -76,7 +76,8 @@ Src/console_commands.c
 CXX_SOURCES = \
 Src/main.cpp \
 Src/l3gd20.cpp \
-Src/lsm303dlhc.cpp
+Src/lsm303dlhc.cpp \
+Src/OrientationEstimator.cpp
 
 # ASM sources
 ASM_SOURCES =  \
