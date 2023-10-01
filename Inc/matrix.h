@@ -89,6 +89,14 @@ public:
     Matrix<T, nrows, nrows> inverse() const;
     void inverse(Matrix<T, nrows, nrows>& inv) const;
 
+    static Matrix<T, nrows, nrows> eye()
+    {
+        Matrix<T, nrows, ncols> result;
+        for (uint16_t i = 0; i < nrows; ++i) {
+            result(i, i) = 1;
+        }
+    }
+
 private:
     T& at(uint16_t row, uint16_t col) { return data_[row * ncols + col]; }
 
@@ -96,6 +104,16 @@ private:
 
     T data_[nrows * ncols]{};
 };
+
+template<class T, uint16_t size>
+Matrix<T, size, size> rotationMatrix(const Vector<T, size>& w)
+{
+    return {
+        0,    -w[2], w[1],
+        w[2],  0,   -w[0],
+        -w[1], w[0], 0
+    };
+}
 
 }
 

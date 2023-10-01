@@ -12,7 +12,7 @@ Kalman Filter estimates the state of a linear discrete process
 x_t = Ax_{t-1} + Bu_t + eps_t
 
 To do so it uses not only the process equation but also a measurement
-z_t = Cx_x + delta_t
+z_t = Cx_t + delta_t
 
 x_t is a considered a gaussian variable with mean mu_t and variance Sigma_t.
 
@@ -27,15 +27,19 @@ Coefficient K_t is introduced to get the optimal Sigma_t
 K_t = Sigma_prio_t * (C_t * Sigma_prio_t * C^T_t + Q_t)^{-1}
 mu_t = mu_prio_t + K_t * (z_t - C_t*mu_prio_t)
 Sigma_t = (I - K_t*C_t) * Sigma_prio_t
+
+For our purposes we'll ignore the control
  */
 
-template <class A, class R, class C, class Q>
+template <class T, uint16_t stateSize, uint16_t measurementSize>
 class KalmanFilter
 {
 public:
-    using Type = typename A::Type;
-    using State = Vector<Type, A::NumRows>;
-    using Measurement = Vector<Type, C::NumRows>;
+    using ValueType = T;
+    using State = Vector<ValueType, stateSize>;
+    using Measurement = Vector<ValueType, measurementSize>;
+    using ProcessMatrix = Matrix<ValueType, stateSize, stateSize>;
+    using MeasurementMatrix = Matrix<ValueType, measurementSize, measurementSize>;
 
     const State& state() const { return muPost_; }
 
@@ -52,22 +56,21 @@ public:
     }
 
 private:
-    using StateCovariance = Matrix<Type, A::NumRows, A::NumRows>;
-    using K = Matrix<Type, State::Size, Measurement::Size>;
+    using KalmanMatrix = Matrix<ValueType, stateSize, measurementSize>;
 
-    const A A_;
-    const A AT_;
-    const R R_;
-    const C C_;
-    const C CT_;
-    const Q Q_;
-    const StateCovariance I_;
-    K K_;
+    const ProcessMatrix A_;
+    const ProcessMatrix AT_;
+    const ProcessMatrix R_;
+    const MeasurementMatrix C_;
+    const MeasurementMatrix CT_;
+    const MeasurementMatrix Q_;
+    const ProcessMatrix I_;
+    KalmanMatrix K_;
 
     State muPost_;
     State muPrio_;
-    StateCovariance SigmaPost_;
-    StateCovariance SigmaPrio_;
+    ProcessMatrix SigmaPost_;
+    ProcessMatrix SigmaPrio_;
 };
 
 }  // namespace mart
