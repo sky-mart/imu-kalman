@@ -13,7 +13,8 @@ target_include_directories(mathmart
     )
 
 add_executable(testMathmart
-    tests/testKalman.cpp
+    tests/testVector.cpp
+    tests/testMatrix.cpp
     )
 
 target_link_libraries(testMathmart
