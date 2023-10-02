@@ -86,6 +86,30 @@ public:
         }
     }
 
+    void luDecompose(Matrix<T, nrows, nrows>& L, Matrix<T, nrows, nrows>& U) const
+    {
+        for (uint16_t i = 0; i < nrows; ++i) {
+            L(i, i) = 1;
+        }
+
+        for (uint16_t j = 0; j < nrows; ++j) {
+            for (uint16_t i = 0; i <= j; ++i) {
+                U(i, j) = at(i, j);
+                for (uint16_t k = 0; (k + 1) <= i; ++k) {
+                    U(i, j) -= L(i, k) * U(k, j);
+                }
+            }
+            for (uint16_t i = j + 1; i < nrows; ++i) {
+                L(i, j) = at(i, j);
+                for (uint16_t k = 0; (k + 1) <= j; ++k) {
+                    L(i, j) -= L(i, k) * U(k, j);
+                }
+                L(i, j) /= U(j, j);
+            }
+        }
+
+    }
+
     Matrix<T, nrows, nrows> inverse() const;
     void inverse(Matrix<T, nrows, nrows>& inv) const;
 

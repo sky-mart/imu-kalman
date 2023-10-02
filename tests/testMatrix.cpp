@@ -114,4 +114,54 @@ TEST(MatrixTest, transpose_ref)
     EXPECT_EQ(Z(1, 1), 40);
 }
 
+TEST(MatrixTest, lu_decomposition_2x2)
+{
+    const Matrix<float, 2, 2> X = {
+        5, 21,
+        8, 40
+    };
+    Matrix<float, 2, 2> L, U;
+    X.luDecompose(L, U);
+
+    EXPECT_FLOAT_EQ(L(0, 0), 1);
+    EXPECT_FLOAT_EQ(L(0, 1), 0);
+    EXPECT_FLOAT_EQ(L(1, 0), 1.6f);
+    EXPECT_FLOAT_EQ(L(1, 1), 1);
+
+    EXPECT_FLOAT_EQ(U(0, 0), 5);
+    EXPECT_FLOAT_EQ(U(0, 1), 21);
+    EXPECT_FLOAT_EQ(U(1, 0), 0);
+    EXPECT_FLOAT_EQ(U(1, 1), 40.0f - 1.6f * 21.0f);
+}
+
+TEST(MatrixTest, lu_decomposition_3x3)
+{
+    const Matrix<float, 3, 3> X = {
+        3, 7, 5,
+        -4, 8, 1,
+        10, 0, 14
+    };
+    Matrix<float, 3, 3> L, U;
+    X.luDecompose(L, U);
+
+    EXPECT_FLOAT_EQ(L(0, 0), 1);
+    EXPECT_FLOAT_EQ(L(0, 1), 0);
+    EXPECT_FLOAT_EQ(L(0, 2), 0);
+    EXPECT_FLOAT_EQ(L(1, 0), -4.0f/3);
+    EXPECT_FLOAT_EQ(L(1, 1), 1);
+    EXPECT_FLOAT_EQ(L(1, 2), 0);
+    EXPECT_FLOAT_EQ(L(2, 0), 10.0f/3);
+    EXPECT_FLOAT_EQ(L(2, 1), -35.0f/26);
+    EXPECT_FLOAT_EQ(L(2, 2), 1);
+
+    EXPECT_FLOAT_EQ(U(0, 0), 3);
+    EXPECT_FLOAT_EQ(U(0, 1), 7);
+    EXPECT_FLOAT_EQ(U(0, 2), 5);
+    EXPECT_FLOAT_EQ(U(1, 0), 0);
+    EXPECT_FLOAT_EQ(U(1, 1), 52.0f/3);
+    EXPECT_FLOAT_EQ(U(1, 2), 23.0f/3);
+    EXPECT_FLOAT_EQ(U(2, 0), 0);
+    EXPECT_FLOAT_EQ(U(2, 1), 0);
+    EXPECT_FLOAT_EQ(U(2, 2), 7.6538461538461515f);
+}
 }
