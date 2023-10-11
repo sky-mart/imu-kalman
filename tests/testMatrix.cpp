@@ -64,7 +64,7 @@ TEST(MatrixTest, multiply_vector)
         5, 21,
         8, 40
     };
-    const Vector<int, 2> a{3, 4};
+    const mart::alloc::Vector<int, 2> a{3, 4};
     const auto b = X * a;
     EXPECT_EQ(b[0], 99);
     EXPECT_EQ(b[1], 184);
@@ -164,4 +164,8 @@ TEST(MatrixTest, lu_decomposition_3x3)
     EXPECT_FLOAT_EQ(U(2, 1), 0);
     EXPECT_FLOAT_EQ(U(2, 2), 7.6538461538461515f);
 }
+
+TEST(MatrixTest, inverse_2x2) {}
+
+TEST(MatrixTest, inverse_3x3) {}
 }

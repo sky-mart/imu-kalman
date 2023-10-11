@@ -44,9 +44,9 @@ public:
         return *this;
     }
 
-    Vector<T, nrows> operator*(const Vector<T, ncols>& vec) const
+    alloc::Vector<T, nrows> operator*(const Vector<T, ncols>& vec) const
     {
-        Vector<T, nrows> result;
+        alloc::Vector<T, nrows> result;
         for (uint16_t row = 0; row < nrows; ++row) {
             for (uint16_t col = 0; col < ncols; ++col) {
                 result[row] += at(row, col) * vec[col];
