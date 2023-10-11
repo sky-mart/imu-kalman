@@ -41,14 +41,16 @@ public:
     using ValueType = T;
 
     using State = Vector<ValueType, stateSize>;
-    using ProcessFunction = std::function<State(const State&)>;
+    using ProcessFunction = std::function<State(const State&, ValueType)>;
     using ProcessMatrix = Matrix<ValueType, stateSize, stateSize>;
-    using GetProcessJacobianFunction = std::function<void(const State&,ProcessMatrix&)>;
+    using GetProcessJacobianFunction =
+        std::function<void(const State&, ProcessMatrix&, ValueType)>;
 
     using Measurement = Vector<ValueType, measurementSize>;
-    using MeasurementFunction = std::function<Measurement(const State&)>;
+    using MeasurementFunction = std::function<Measurement(const State&, ValueType)>;
     using MeasurementMatrix = Matrix<ValueType, measurementSize, measurementSize>;
-    using GetMeasurementJacobianFunction = std::function<void(const State&, MeasurementMatrix&)>;
+    using GetMeasurementJacobianFunction =
+        std::function<void(const State&, MeasurementMatrix&, ValueType)>;
 
     ExtendedKalmanFilter(
         ProcessFunction f,

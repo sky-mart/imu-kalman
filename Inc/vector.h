@@ -42,6 +42,33 @@ public:
         return *this;
     }
 
+    Vector<T, size> operator*(T multiplier) const
+    {
+        Vector<T, size> result;
+        for (uint16_t i = 0; i < size; ++i) {
+            result[i] = data_[i] * multiplier;
+        }
+        return result;
+    }
+
+    Vector<T, size>& operator*=(T multiplier) const
+    {
+        for (uint16_t i = 0; i < size; ++i) {
+            data_[i] *= multiplier;
+        }
+        return *this;
+    }
+
+    template <uint16_t subSize>
+    Vector<T, subSize> subvec(uint16_t from) const
+    {
+        Vector<T, subSize> v;
+        for (uint16_t i = 0; i < subSize; ++i) {
+            v[i] = data_[from + i];
+        }
+        return v;
+    }
+
 private:
     T data_[size]{};
 };

@@ -8,7 +8,7 @@ namespace mart {
 class OrientationEstimator
 {
 public:
-    using EKF = ExtendedKalmanFilter<float, 9, 9>;
+    using EKF = ExtendedKalmanFilter<float, 12, 12>;
 
     OrientationEstimator();
 
