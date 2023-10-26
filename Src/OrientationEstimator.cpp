@@ -5,45 +5,47 @@ namespace mart {
 namespace
 {
 
-using State = typename OrientationEstimator::EKF::State;
+using EkfState = typename OrientationEstimator::EKF::State;
 using ProcessMatrix = typename OrientationEstimator::EKF::ProcessMatrix;
 using Measurement = typename OrientationEstimator::EKF::Measurement;
 using MeasurementMatrix = typename OrientationEstimator::EKF::MeasurementMatrix;
 
-State process(const State& cur, float dt)
+class State : public EkfState
 {
-    State next;
-    for (int i = 0; i < 3; ++i) {
-        next[i] = cur[i] + cur[3 + i] * dt;
-        next[3 + i] = cur[3 + i];
-    }
+public:
+    auto omega() const { return subvec<3>(0); }
 
-    const auto rotM = rotationMatrix(cur.subvec<3>(0));
-    const auto curG = cur.subvec<3>(6);
-    const auto  nextG = curG + rotM * curG * dt;
-    for (int i = 0; i < 3; ++i) {
-        next[6 + i] = nextG[i];
-    }
+    auto omegaDot() const { return subvec<3>(3); }
 
-    const auto curM = cur.subvec<3>(9);
-    const auto nextM = curM + rotM * curM * dt;
-    for (int i = 0; i < 3; ++i) {
-        next[9 + i] = nextM[i];
-    }
-    return next;
+    auto g() const { return subvec<3>(6); }
+
+    auto m() const { return subvec<3>(9); }
+};
+
+void process(EkfState& nextState, const EkfState& currentState, float dt)
+{
+    const auto& current = reinterpret_cast<const State&>(currentState);
+    auto& next = reinterpret_cast<State&>(nextState);
+
+    next.omega() = current.omega() + current.omegaDot() * dt;
+    next.omegaDot() = current.omegaDot();
+
+    const auto rotM = rotationMatrix(current.omega());
+    next.g() = current.g() + rotM * current.g() * dt;
+    next.m() = current.m() + rotM * current.m() * dt;
 }
 
-void getProcessJacobian(const State& state, ProcessMatrix& jacobian, float dt)
+void getProcessJacobian(const EkfState& state, ProcessMatrix& jacobian, float dt)
 {
 
 }
 
-Measurement measurement(const State& state, float dt)
+Measurement measurement(const EkfState& state, float dt)
 {
     return state;
 }
 
-void getMeasurementJacobian(const State& state, MeasurementMatrix& jacobian, float dt)
+void getMeasurementJacobian(const EkfState& state, MeasurementMatrix& jacobian, float dt)
 {
 }
 
