@@ -8,7 +8,7 @@ using mart::Matrix;
 
 TEST(MatrixTest, default_ctor)
 {
-    const Matrix<int, 2, 2> mat;
+    const mart::alloc::Matrix<int, 2, 2> mat;
     EXPECT_EQ(mat(0, 0), 0);
     EXPECT_EQ(mat(0, 1), 0);
     EXPECT_EQ(mat(1, 0), 0);
@@ -17,7 +17,7 @@ TEST(MatrixTest, default_ctor)
 
 TEST(MatrixTest, initlist_ctor)
 {
-    const Matrix<int, 2, 2> mat{5, 21, 8, 40};
+    const mart::alloc::Matrix<int, 2, 2> mat{5, 21, 8, 40};
     EXPECT_EQ(mat(0, 0), 5);
     EXPECT_EQ(mat(0, 1), 21);
     EXPECT_EQ(mat(1, 0), 8);
@@ -26,11 +26,11 @@ TEST(MatrixTest, initlist_ctor)
 
 TEST(MatrixTest, add)
 {
-    const Matrix<int, 2, 2> X = {
+    const mart::alloc::Matrix<int, 2, 2> X = {
         5, 21,
         8, 40
     };
-    const Matrix<int, 2, 2> Y = {
+    const mart::alloc::Matrix<int, 2, 2> Y = {
         10, 1,
         7, 6
     };
@@ -43,11 +43,11 @@ TEST(MatrixTest, add)
 
 TEST(MatrixTest, assign_add)
 {
-    Matrix<int, 2, 2> X = {
+    mart::alloc::Matrix<int, 2, 2> X = {
         5, 21,
         8, 40
     };
-    const Matrix<int, 2, 2> Y = {
+    const mart::alloc::Matrix<int, 2, 2> Y = {
         10, 1,
         7, 6
     };
@@ -60,7 +60,7 @@ TEST(MatrixTest, assign_add)
 
 TEST(MatrixTest, multiply_vector)
 {
-    const Matrix<int, 2, 2> X = {
+    const mart::alloc::Matrix<int, 2, 2> X = {
         5, 21,
         8, 40
     };
@@ -72,11 +72,11 @@ TEST(MatrixTest, multiply_vector)
 
 TEST(MatrixTest, multiply_matrix)
 {
-    const Matrix<int, 2, 2> X = {
+    const mart::alloc::Matrix<int, 2, 2> X = {
         5, 21,
         8, 40
     };
-    const Matrix<int, 2, 2> Y = {
+    const mart::alloc::Matrix<int, 2, 2> Y = {
         10, 1,
         7, 6
     };
@@ -89,7 +89,7 @@ TEST(MatrixTest, multiply_matrix)
 
 TEST(MatrixTest, transpose)
 {
-    const Matrix<int, 2, 2> X = {
+    const mart::alloc::Matrix<int, 2, 2> X = {
         5, 21,
         8, 40
     };
@@ -102,11 +102,11 @@ TEST(MatrixTest, transpose)
 
 TEST(MatrixTest, transpose_ref)
 {
-    const Matrix<int, 2, 2> X = {
+    const mart::alloc::Matrix<int, 2, 2> X = {
         5, 21,
         8, 40
     };
-    Matrix<int, 2, 2> Z;
+    mart::alloc::Matrix<int, 2, 2> Z;
     X.transpose(Z);
     EXPECT_EQ(Z(0, 0), 5);
     EXPECT_EQ(Z(0, 1), 8);
@@ -116,11 +116,11 @@ TEST(MatrixTest, transpose_ref)
 
 TEST(MatrixTest, lu_decomposition_2x2)
 {
-    const Matrix<float, 2, 2> X = {
+    const mart::alloc::Matrix<float, 2, 2> X = {
         5, 21,
         8, 40
     };
-    Matrix<float, 2, 2> L, U;
+    mart::alloc::Matrix<float, 2, 2> L, U;
     X.luDecompose(L, U);
 
     EXPECT_FLOAT_EQ(L(0, 0), 1);
@@ -136,12 +136,12 @@ TEST(MatrixTest, lu_decomposition_2x2)
 
 TEST(MatrixTest, lu_decomposition_3x3)
 {
-    const Matrix<float, 3, 3> X = {
+    const mart::alloc::Matrix<float, 3, 3> X = {
         3, 7, 5,
         -4, 8, 1,
         10, 0, 14
     };
-    Matrix<float, 3, 3> L, U;
+    mart::alloc::Matrix<float, 3, 3> L, U;
     X.luDecompose(L, U);
 
     EXPECT_FLOAT_EQ(L(0, 0), 1);

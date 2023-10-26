@@ -10,6 +10,16 @@ using ProcessMatrix = typename OrientationEstimator::EKF::ProcessMatrix;
 using Measurement = typename OrientationEstimator::EKF::Measurement;
 using MeasurementMatrix = typename OrientationEstimator::EKF::MeasurementMatrix;
 
+template<class T>
+::mart::alloc::Matrix<T, 3, 3> rotationMatrix(const Vector<T, 3>& w)
+{
+    return ::mart::alloc::Matrix<T, 3, 3>({
+        0,    -w[2], w[1],
+        w[2],  0,   -w[0],
+        -w[1], w[0], 0
+        });
+}
+
 class State : public EkfState
 {
 public:
@@ -54,10 +64,10 @@ void getMeasurementJacobian(const EkfState& state, MeasurementMatrix& jacobian, 
 OrientationEstimator::OrientationEstimator()
     : ekf_(&process,
            &getProcessJacobian,
-           ProcessMatrix(),
+           ProcessMatrix::Alloc(),
            &measurement,
            &getMeasurementJacobian,
-           MeasurementMatrix())
+           MeasurementMatrix::Alloc())
 {}
 
 

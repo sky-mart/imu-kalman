@@ -20,6 +20,7 @@ class Vector
 public:
     using Type                     = T;
     static constexpr uint16_t Size = size;
+    using Alloc = alloc::Vector<T, size>;
 
     explicit Vector(T* data);
 

@@ -41,7 +41,6 @@ public:
     using ValueType = T;
 
     using State = Vector<ValueType, stateSize>;
-    using AllocState = alloc::Vector<ValueType, stateSize>;
     using ProcessFunction =
         std::function<void(State&, const State&, ValueType)>;
     using ProcessMatrix = Matrix<ValueType, stateSize, stateSize>;
@@ -65,10 +64,10 @@ public:
         ) :
         f_(std::move(f)),
         getProcessJacobian_(std::move(getProcessJacobian)),
-        R_(std::move(processCovariance)),
+        R_(processCovariance),
         h_(std::move(h)),
         getMeasurementJacobian_(std::move(getMeasurementJacobian)),
-        Q_(std::move(measurementCovariance)),
+        Q_(measurementCovariance),
         I_(ProcessMatrix::eye())
     {}
 
@@ -88,25 +87,28 @@ public:
     }
 
 private:
-    using KalmanMatrix = Matrix<ValueType, stateSize, measurementSize>;
+    using AllocKalmanMatrix = alloc::Matrix<ValueType, stateSize, measurementSize>;
+    using AllocState   = typename State::Alloc;
+    using AllocProcessMatrix     = typename ProcessMatrix::Alloc;
+    using AllocMeasurementMatrix = typename MeasurementMatrix::Alloc;
 
     const ProcessFunction f_;
     const GetProcessJacobianFunction getProcessJacobian_;
-    ProcessMatrix F_;
-    ProcessMatrix FT_;
-    const ProcessMatrix R_;
+    AllocProcessMatrix F_;
+    AllocProcessMatrix FT_;
+    const AllocProcessMatrix R_;
     const MeasurementFunction h_;
     const GetMeasurementJacobianFunction getMeasurementJacobian_;
-    MeasurementMatrix H_;
-    MeasurementMatrix HT_;
-    const MeasurementMatrix Q_;
-    const ProcessMatrix I_;
-    KalmanMatrix K_;
+    AllocMeasurementMatrix H_;
+    AllocMeasurementMatrix HT_;
+    const AllocMeasurementMatrix Q_;
+    const AllocProcessMatrix I_;
+    AllocKalmanMatrix K_;
 
     AllocState muPost_;
     AllocState muPrio_;
-    ProcessMatrix SigmaPost_;
-    ProcessMatrix SigmaPrio_;
+    AllocProcessMatrix SigmaPost_;
+    AllocProcessMatrix SigmaPrio_;
 };
 
 }
