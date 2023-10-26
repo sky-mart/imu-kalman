@@ -168,4 +168,20 @@ TEST(MatrixTest, lu_decomposition_3x3)
 TEST(MatrixTest, inverse_2x2) {}
 
 TEST(MatrixTest, inverse_3x3) {}
+
+TEST(MatrixTest, submat)
+{
+    mart::alloc::Matrix<int, 3, 3> X = {
+        3, 7, 5,
+        -4, 8, 1,
+        10, 0, 14
+    };
+
+    auto Y = X.submat<2, 2>(1, 1);
+    EXPECT_EQ(Y(0, 0), 8);
+    EXPECT_EQ(Y(0, 1), 1);
+    EXPECT_EQ(Y(1, 0), 0);
+    EXPECT_EQ(Y(1, 1), 14);
+}
+
 }

@@ -14,7 +14,7 @@ template <class T, uint16_t nrows, uint16_t ncols>
 class Matrix;
 }
 
-template <class T, uint16_t nrows, uint16_t ncols>
+template <class T, uint16_t nrows, uint16_t ncols, uint16_t skip=0>
 class Matrix
 {
 public:
@@ -52,12 +52,12 @@ public:
     static alloc::Matrix<T, nrows, ncols> eye();
 
     template<uint16_t subRows, uint16_t subCols>
-    Matrix<T, subRows, subCols> submat(uint16_t fromRow, uint16_t fromCol) const;
+    Matrix<T, subRows, subCols, ncols + skip - subCols> submat(uint16_t fromRow, uint16_t fromCol);
 
 protected:
-    T& at(uint16_t row, uint16_t col) { return d_[row * ncols + col]; }
+    T& at(uint16_t row, uint16_t col) { return d_[row * (ncols + skip) + col]; }
 
-    T at(uint16_t row, uint16_t col) const { return d_[row * ncols + col]; }
+    T at(uint16_t row, uint16_t col) const { return d_[row * (ncols + skip) + col]; }
 
     T* d_;
 };
@@ -90,8 +90,8 @@ private:
 
 }  // namespace alloc
 
-template <class T, uint16_t nrows, uint16_t ncols>
-alloc::Matrix<T, nrows, ncols> Matrix<T, nrows, ncols>::operator+(const Matrix<T, nrows, ncols>& rhs) const
+template <class T, uint16_t nrows, uint16_t ncols, uint16_t skip>
+alloc::Matrix<T, nrows, ncols> Matrix<T, nrows, ncols, skip>::operator+(const Matrix<T, nrows, ncols>& rhs) const
 {
     alloc::Matrix<T, nrows, ncols> result;
     for (uint16_t row = 0; row < nrows; ++row) {
@@ -102,8 +102,8 @@ alloc::Matrix<T, nrows, ncols> Matrix<T, nrows, ncols>::operator+(const Matrix<T
     return result;
 }
 
-template <class T, uint16_t nrows, uint16_t ncols>
-Matrix<T, nrows, ncols>& Matrix<T, nrows, ncols>::operator+=(const Matrix<T, nrows, ncols>& rhs)
+template <class T, uint16_t nrows, uint16_t ncols, uint16_t skip>
+Matrix<T, nrows, ncols>& Matrix<T, nrows, ncols, skip>::operator+=(const Matrix<T, nrows, ncols>& rhs)
 {
     for (uint16_t row = 0; row < nrows; ++row) {
         for (uint16_t col = 0; col < ncols; ++col) {
@@ -113,8 +113,8 @@ Matrix<T, nrows, ncols>& Matrix<T, nrows, ncols>::operator+=(const Matrix<T, nro
     return *this;
 }
 
-template <class T, uint16_t nrows, uint16_t ncols>
-alloc::Vector<T, nrows> Matrix<T, nrows, ncols>::operator*(const Vector<T, ncols>& vec) const
+template <class T, uint16_t nrows, uint16_t ncols, uint16_t skip>
+alloc::Vector<T, nrows> Matrix<T, nrows, ncols, skip>::operator*(const Vector<T, ncols>& vec) const
 {
     alloc::Vector<T, nrows> result;
     for (uint16_t row = 0; row < nrows; ++row) {
@@ -125,9 +125,9 @@ alloc::Vector<T, nrows> Matrix<T, nrows, ncols>::operator*(const Vector<T, ncols
     return result;
 }
 
-template <class T, uint16_t nrows, uint16_t ncols>
+template <class T, uint16_t nrows, uint16_t ncols, uint16_t skip>
 template <uint16_t size>
-alloc::Matrix<T, nrows, size> Matrix<T, nrows, ncols>::operator*(const Matrix<T, ncols, size>& mat) const
+alloc::Matrix<T, nrows, size> Matrix<T, nrows, ncols, skip>::operator*(const Matrix<T, ncols, size>& mat) const
 {
     alloc::Matrix<T, nrows, size> result;
     for (uint16_t row = 0; row < nrows; ++row) {
@@ -140,16 +140,16 @@ alloc::Matrix<T, nrows, size> Matrix<T, nrows, ncols>::operator*(const Matrix<T,
     return result;
 }
 
-template <class T, uint16_t nrows, uint16_t ncols>
-alloc::Matrix<T, ncols, nrows> Matrix<T, nrows, ncols>::transpose() const
+template <class T, uint16_t nrows, uint16_t ncols, uint16_t skip>
+alloc::Matrix<T, ncols, nrows> Matrix<T, nrows, ncols, skip>::transpose() const
 {
     alloc::Matrix<T, nrows, ncols> result;
     transpose(result);
     return result;
 }
 
-template <class T, uint16_t nrows, uint16_t ncols>
-void Matrix<T, nrows, ncols>::transpose(Matrix<T, ncols, nrows>& tr) const
+template <class T, uint16_t nrows, uint16_t ncols, uint16_t skip>
+void Matrix<T, nrows, ncols, skip>::transpose(Matrix<T, ncols, nrows>& tr) const
 {
     for (uint16_t row = 0; row < nrows; ++row) {
         for (uint16_t col = 0; col < ncols; ++col) {
@@ -158,8 +158,8 @@ void Matrix<T, nrows, ncols>::transpose(Matrix<T, ncols, nrows>& tr) const
     }
 }
 
-template <class T, uint16_t nrows, uint16_t ncols>
-void Matrix<T, nrows, ncols>::luDecompose(Matrix<T, nrows, nrows>& L, Matrix<T, nrows, nrows>& U) const
+template <class T, uint16_t nrows, uint16_t ncols, uint16_t skip>
+void Matrix<T, nrows, ncols, skip>::luDecompose(Matrix<T, nrows, nrows>& L, Matrix<T, nrows, nrows>& U) const
 {
     for (uint16_t i = 0; i < nrows; ++i) {
         L(i, i) = 1;
@@ -182,14 +182,22 @@ void Matrix<T, nrows, ncols>::luDecompose(Matrix<T, nrows, nrows>& L, Matrix<T, 
     }
 }
 
-template <class T, uint16_t nrows, uint16_t ncols>
-alloc::Matrix<T, nrows, ncols> Matrix<T, nrows, ncols>::eye()
+template <class T, uint16_t nrows, uint16_t ncols, uint16_t skip>
+alloc::Matrix<T, nrows, ncols> Matrix<T, nrows, ncols, skip>::eye()
 {
     alloc::Matrix<T, nrows, ncols> result;
     for (uint16_t i = 0; i < nrows; ++i) {
         result(i, i) = 1;
     }
     return result;
+}
+
+template <class T, uint16_t nrows, uint16_t ncols, uint16_t skip>
+template <uint16_t subRows, uint16_t subCols>
+Matrix<T, subRows, subCols, ncols + skip - subCols>
+Matrix<T, nrows, ncols, skip>::submat(uint16_t fromRow, uint16_t fromCol)
+{
+    return Matrix<T, subRows, subCols, ncols + skip - subCols>(&at(fromRow, fromCol));
 }
 
 }
