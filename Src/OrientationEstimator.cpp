@@ -1,78 +1,72 @@
 #include "OrientationEstimator.h"
 
-namespace mart {
+namespace mart
+{
+namespace orient
+{
 
 namespace
 {
 
-using EkfState = typename OrientationEstimator::EKF::State;
-using ProcessMatrix = typename OrientationEstimator::EKF::ProcessMatrix;
-using Measurement = typename OrientationEstimator::EKF::Measurement;
+using State             = typename OrientationEstimator::EKF::State;
+using ProcessMatrix     = typename OrientationEstimator::EKF::ProcessMatrix;
+using Measurement       = typename OrientationEstimator::EKF::Measurement;
 using MeasurementMatrix = typename OrientationEstimator::EKF::MeasurementMatrix;
 
-template<class T>
-::mart::alloc::Matrix<T, 3, 3> rotationMatrix(const Vector<T, 3>& w)
+const auto I = alloc::Matrix<float, VEC_SIZE, VEC_SIZE>::eye();
+const alloc::Matrix<float, VEC_SIZE, VEC_SIZE> O;
+
+enum { Omega, OmegaDot, G, M };
+enum { X, Y, Z };
+
+template <class T>
+::mart::alloc::Matrix<T, VEC_SIZE, VEC_SIZE> rotationMatrix(
+    const Vector<T, VEC_SIZE>& w)
 {
-    return ::mart::alloc::Matrix<T, 3, 3>({
-        0,    -w[2], w[1],
-        w[2],  0,   -w[0],
-        -w[1], w[0], 0
-    });
+    return ::mart::alloc::Matrix<T, VEC_SIZE, VEC_SIZE>(
+        {0, -w[Z], w[Y], w[Z], 0, -w[X], -w[Y], w[X], 0});
 }
 
-class State : public EkfState
+void process(State& nextState, const State& currentState, float dt)
 {
-public:
-    auto omega() const { return subvec<3>(0); }
+    auto current = currentState.partition<VEC_SIZE>();
+    auto next    = nextState.partition<VEC_SIZE>();
 
-    auto omegaDot() const { return subvec<3>(3); }
+    next[Omega]    = current[Omega] + current[OmegaDot] * dt;
+    next[OmegaDot] = current[OmegaDot];
 
-    auto g() const { return subvec<3>(6); }
-
-    auto m() const { return subvec<3>(9); }
-};
-
-void process(EkfState& nextState, const EkfState& currentState, float dt)
-{
-    const auto& current = reinterpret_cast<const State&>(currentState);
-    auto& next = reinterpret_cast<State&>(nextState);
-
-    next.omega() = current.omega() + current.omegaDot() * dt;
-    next.omegaDot() = current.omegaDot();
-
-    const auto rotM = rotationMatrix(current.omega());
-    next.g() = current.g() + rotM * current.g() * dt;
-    next.m() = current.m() + rotM * current.m() * dt;
+    const auto rotM = rotationMatrix(current[Omega]);
+    next[G]         = current[G] + rotM * current[G] * dt;
+    next[M]         = current[M] + rotM * current[M] * dt;
 }
 
-void getProcessJacobian(const EkfState& currentState, ProcessMatrix& jacobian, float dt)
+void getProcessJacobian(const State& currentState,
+                        ProcessMatrix& jacobian,
+                        float dt)
 {
-    auto J = jacobian.partition<3, 3>();
-    const auto& current = reinterpret_cast<const State&>(currentState);
-    const auto I = alloc::Matrix<float, 3, 3>::eye();
-    const alloc::Matrix<float, 3, 3> O;
-    const auto rotG = rotationMatrix(current.g()) * (-dt);
-    const auto rotM = rotationMatrix(current.m()) * (-dt);
-    const auto rotW = I + rotationMatrix(current.omega()) * dt;
+    auto J       = jacobian.partition<VEC_SIZE, VEC_SIZE>();
+    auto current = currentState.partition<VEC_SIZE>();
 
-    J = std::initializer_list<Matrix<float, 3, 3>>{
-        I,    I*dt, O,    O,
-        O,    I,    O,    O,
-        rotG, 0,    rotW, 0,
-        rotM, 0,    0,    rotW
-    };
+    const auto rotG = rotationMatrix(current[G]) * (-dt);
+    const auto rotM = rotationMatrix(current[M]) * (-dt);
+    const auto rotW = I + rotationMatrix(current[Omega]) * dt;
+
+    J = std::initializer_list<Matrix<float, VEC_SIZE, VEC_SIZE>>{
+        I, I * dt, O, O, O, I, O, O, rotG, 0, rotW, 0, rotM, 0, 0, rotW};
 }
 
-Measurement measurement(const EkfState& state, float dt)
+Measurement measurement(const State& state, float dt)
 {
-    return state;
+    return Measurement{};
 }
 
-void getMeasurementJacobian(const EkfState& state, MeasurementMatrix& jacobian, float dt)
+void getMeasurementJacobian(const State& state,
+                            MeasurementMatrix& jacobian,
+                            float dt)
 {
 }
 
-}
+}  // namespace
 
 OrientationEstimator::OrientationEstimator()
     : ekf_(&process,
@@ -81,9 +75,8 @@ OrientationEstimator::OrientationEstimator()
            &measurement,
            &getMeasurementJacobian,
            MeasurementMatrix::Alloc())
-{}
-
-
-
-
+{
 }
+
+}  // namespace orient
+}  // namespace mart

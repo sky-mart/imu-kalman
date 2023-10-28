@@ -24,7 +24,7 @@ public:
     using Alloc = alloc::Matrix<T, nrows, ncols>;
 
     // Needed to be able to declare an array of matrices
-    Matrix() {}
+    Matrix() = default;
 
     explicit Matrix(T* data, uint16_t skipCols = 0) : d_(data), skipCols_(skipCols) {}
 

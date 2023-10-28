@@ -62,4 +62,14 @@ TEST(VectorTest, subvec)
     EXPECT_EQ(y[1], 10);
 }
 
+TEST(VectorTest, partition)
+{
+    const Vector<int, 4> x{7, 4, 10, 2};
+    const auto y = x.partition<2>();
+    EXPECT_EQ(y[0][0], 7);
+    EXPECT_EQ(y[0][1], 4);
+    EXPECT_EQ(y[1][0], 10);
+    EXPECT_EQ(y[1][1], 2);
+}
+
 }  // namespace

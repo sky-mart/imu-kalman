@@ -22,6 +22,8 @@ public:
     static constexpr uint16_t Size = size;
     using Alloc = alloc::Vector<T, size>;
 
+    Vector() = default;
+
     explicit Vector(T* data);
 
     T& operator[](uint16_t i);
@@ -39,8 +41,14 @@ public:
     template <uint16_t subSize>
     Vector<T, subSize> subvec(uint16_t from) const;
 
+    template <uint16_t subSize>
+    alloc::Vector<Vector<T, subSize>, size / subSize> partition();
+
+    template <uint16_t subSize>
+    const alloc::Vector<Vector<T, subSize>, size / subSize> partition() const;
+
 private:
-    T* d_;
+    T* d_{nullptr};
 };
 
 namespace alloc
@@ -131,6 +139,28 @@ template <uint16_t subSize>
 Vector<T, subSize> Vector<T, size>::subvec(uint16_t from) const
 {
     return Vector<T, subSize>(d_ + from);
+}
+
+template <typename T, uint16_t size>
+template <uint16_t subSize>
+alloc::Vector<Vector<T, subSize>, size / subSize> Vector<T, size>::partition()
+{
+    alloc::Vector<Vector<T, subSize>, size / subSize> p;
+    for (uint16_t i = 0; i < size / subSize; ++i) {
+        p[i] = subvec<subSize>(i * subSize);
+    }
+    return p;
+}
+
+template <typename T, uint16_t size>
+template <uint16_t subSize>
+const alloc::Vector<Vector<T, subSize>, size / subSize> Vector<T, size>::partition() const
+{
+    alloc::Vector<Vector<T, subSize>, size / subSize> p;
+    for (uint16_t i = 0; i < size / subSize; ++i) {
+        p[i] = subvec<subSize>(i * subSize);
+    }
+    return p;
 }
 
 }  // namespace mart
