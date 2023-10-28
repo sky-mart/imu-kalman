@@ -48,9 +48,8 @@ public:
         std::function<void(const State&, ProcessMatrix&, ValueType)>;
 
     using Measurement = Vector<ValueType, measurementSize>;
-    using AllocMeasurement = alloc::Vector<ValueType, measurementSize>;
     using MeasurementFunction = std::function<Measurement(const State&, ValueType)>;
-    using MeasurementMatrix = Matrix<ValueType, measurementSize, measurementSize>;
+    using MeasurementMatrix = Matrix<ValueType, measurementSize, stateSize>;
     using GetMeasurementJacobianFunction =
         std::function<void(const State&, MeasurementMatrix&, ValueType)>;
 
@@ -76,9 +75,15 @@ public:
 
     void update(const Measurement& z, ValueType dt)
     {
+        getProcessJacobian(muPost_, F_, dt);
+        F_.transpose(FT_);
+
         // prediction
         f_(muPrio_, muPost_, dt);
         SigmaPrio_ = F_ * SigmaPost_ * FT_ + R_;
+
+        getMeasurementJacobian(muPrio_, H_, dt);
+        H_.transpose(HT_);
 
         // correction
         K_ = SigmaPrio_ * (H_ * SigmaPrio_ * HT_ + Q_).inverse();
@@ -88,7 +93,7 @@ public:
 
 private:
     using AllocKalmanMatrix = alloc::Matrix<ValueType, stateSize, measurementSize>;
-    using AllocState   = typename State::Alloc;
+    using AllocState        = typename State::Alloc;
     using AllocProcessMatrix     = typename ProcessMatrix::Alloc;
     using AllocMeasurementMatrix = typename MeasurementMatrix::Alloc;
 

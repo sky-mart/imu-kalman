@@ -16,15 +16,20 @@ using MeasurementMatrix = typename OrientationEstimator::EKF::MeasurementMatrix;
 const auto I = alloc::Matrix<float, VEC_SIZE, VEC_SIZE>::eye();
 const alloc::Matrix<float, VEC_SIZE, VEC_SIZE> O;
 
-enum { Omega, OmegaDot, G, M };
-enum { X, Y, Z };
+enum StateIndex { Omega, OmegaDot, G, M };
+enum VecIndex { X, Y, Z };
 
 template <class T>
 ::mart::alloc::Matrix<T, VEC_SIZE, VEC_SIZE> rotationMatrix(
     const Vector<T, VEC_SIZE>& w)
 {
-    return ::mart::alloc::Matrix<T, VEC_SIZE, VEC_SIZE>(
-        {0, -w[Z], w[Y], w[Z], 0, -w[X], -w[Y], w[X], 0});
+    // clang-format off
+    return {
+        0, -w[Z], w[Y],
+        w[Z], 0, -w[X],
+        -w[Y], w[X], 0
+    };
+    // clang-format on
 }
 
 void process(State& nextState, const State& currentState, float dt)
@@ -51,19 +56,39 @@ void getProcessJacobian(const State& currentState,
     const auto rotM = rotationMatrix(current[M]) * (-dt);
     const auto rotW = I + rotationMatrix(current[Omega]) * dt;
 
+    // clang-format off
     J = std::initializer_list<Matrix<float, VEC_SIZE, VEC_SIZE>>{
-        I, I * dt, O, O, O, I, O, O, rotG, 0, rotW, 0, rotM, 0, 0, rotW};
+        I,    I * dt, O,    O,
+        O,    I,      O,    O,
+        rotG, 0,      rotW, 0,
+        rotM, 0,      0,    rotW
+    };
+    // clang-format on
 }
 
 Measurement measurement(const State& state, float dt)
 {
-    return Measurement{};
+    typename Measurement::Alloc meas;
+    auto z = meas.partition<VEC_SIZE>();
+    auto x = state.partition<VEC_SIZE>();
+
+    z = {x[0], x[2], x[3]};
+
+    return meas;
 }
 
 void getMeasurementJacobian(const State& state,
                             MeasurementMatrix& jacobian,
                             float dt)
 {
+    auto J       = jacobian.partition<VEC_SIZE, VEC_SIZE>();
+    // clang-format off
+    J = std::initializer_list<Matrix<float, VEC_SIZE, VEC_SIZE>>{
+        I, O, O, O,
+        O, O, I, O,
+        O, 0, O, I,
+    };
+    // clang-format on
 }
 
 }  // namespace
