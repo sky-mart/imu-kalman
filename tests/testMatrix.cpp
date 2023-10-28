@@ -184,4 +184,39 @@ TEST(MatrixTest, submat)
     EXPECT_EQ(Y(1, 1), 14);
 }
 
+TEST(MatrixTest, partition)
+{
+    mart::alloc::Matrix<int, 4, 4> X = {
+        3, 7, 5, 2,
+        -4, 8, 1, 0,
+        10, 0, 14, 4,
+        1, 3, 5, 7
+    };
+    auto P = X.partition<2, 2>();
+
+    const auto& A = P(0, 0);
+    EXPECT_EQ(A(0, 0), 3);
+    EXPECT_EQ(A(0, 1), 7);
+    EXPECT_EQ(A(1, 0), -4);
+    EXPECT_EQ(A(1, 1), 8);
+
+    const auto& B = P(0, 1);
+    EXPECT_EQ(B(0, 0), 5);
+    EXPECT_EQ(B(0, 1), 2);
+    EXPECT_EQ(B(1, 0), 1);
+    EXPECT_EQ(B(1, 1), 0);
+
+    const auto& C = P(1, 0);
+    EXPECT_EQ(C(0, 0), 10);
+    EXPECT_EQ(C(0, 1), 0);
+    EXPECT_EQ(C(1, 0), 1);
+    EXPECT_EQ(C(1, 1), 3);
+
+    const auto& D = P(1, 1);
+    EXPECT_EQ(D(0, 0), 14);
+    EXPECT_EQ(D(0, 1), 4);
+    EXPECT_EQ(D(1, 0), 5);
+    EXPECT_EQ(D(1, 1), 7);
+}
+
 }

@@ -17,7 +17,7 @@ template<class T>
         0,    -w[2], w[1],
         w[2],  0,   -w[0],
         -w[1], w[0], 0
-        });
+    });
 }
 
 class State : public EkfState
@@ -45,9 +45,22 @@ void process(EkfState& nextState, const EkfState& currentState, float dt)
     next.m() = current.m() + rotM * current.m() * dt;
 }
 
-void getProcessJacobian(const EkfState& state, ProcessMatrix& jacobian, float dt)
+void getProcessJacobian(const EkfState& currentState, ProcessMatrix& jacobian, float dt)
 {
+    auto J = jacobian.partition<3, 3>();
+    const auto& current = reinterpret_cast<const State&>(currentState);
+    const auto I = alloc::Matrix<float, 3, 3>::eye();
+    const alloc::Matrix<float, 3, 3> O;
+    const auto rotG = rotationMatrix(current.g()) * (-dt);
+    const auto rotM = rotationMatrix(current.m()) * (-dt);
+    const auto rotW = I + rotationMatrix(current.omega()) * dt;
 
+    J = std::initializer_list<Matrix<float, 3, 3>>{
+        I,    I*dt, O,    O,
+        O,    I,    O,    O,
+        rotG, 0,    rotW, 0,
+        rotM, 0,    0,    rotW
+    };
 }
 
 Measurement measurement(const EkfState& state, float dt)
