@@ -9,19 +9,19 @@ using mart::Matrix;
 TEST(MatrixTest, default_ctor)
 {
     const mart::alloc::Matrix<int, 2, 2> mat;
-    EXPECT_EQ(mat(0, 0), 0);
-    EXPECT_EQ(mat(0, 1), 0);
-    EXPECT_EQ(mat(1, 0), 0);
-    EXPECT_EQ(mat(1, 1), 0);
+    EXPECT_EQ(0, mat(0, 0));
+    EXPECT_EQ(0, mat(0, 1));
+    EXPECT_EQ(0, mat(1, 0));
+    EXPECT_EQ(0, mat(1, 1));
 }
 
 TEST(MatrixTest, initlist_ctor)
 {
     const mart::alloc::Matrix<int, 2, 2> mat{5, 21, 8, 40};
-    EXPECT_EQ(mat(0, 0), 5);
-    EXPECT_EQ(mat(0, 1), 21);
-    EXPECT_EQ(mat(1, 0), 8);
-    EXPECT_EQ(mat(1, 1), 40);
+    EXPECT_EQ(5, mat(0, 0));
+    EXPECT_EQ(21, mat(0, 1));
+    EXPECT_EQ(8, mat(1, 0));
+    EXPECT_EQ(40, mat(1, 1));
 }
 
 TEST(MatrixTest, add)
@@ -35,10 +35,10 @@ TEST(MatrixTest, add)
         7, 6
     };
     const auto Z = X + Y;
-    EXPECT_EQ(Z(0, 0), 15);
-    EXPECT_EQ(Z(0, 1), 22);
-    EXPECT_EQ(Z(1, 0), 15);
-    EXPECT_EQ(Z(1, 1), 46);
+    EXPECT_EQ(15, Z(0, 0));
+    EXPECT_EQ(22, Z(0, 1));
+    EXPECT_EQ(15, Z(1, 0));
+    EXPECT_EQ(46, Z(1, 1));
 }
 
 TEST(MatrixTest, assign_add)
@@ -52,10 +52,10 @@ TEST(MatrixTest, assign_add)
         7, 6
     };
     X += Y;
-    EXPECT_EQ(X(0, 0), 15);
-    EXPECT_EQ(X(0, 1), 22);
-    EXPECT_EQ(X(1, 0), 15);
-    EXPECT_EQ(X(1, 1), 46);
+    EXPECT_EQ(15, X(0, 0));
+    EXPECT_EQ(22, X(0, 1));
+    EXPECT_EQ(15, X(1, 0));
+    EXPECT_EQ(46, X(1, 1));
 }
 
 TEST(MatrixTest, multiply_vector)
